@@ -1,0 +1,8 @@
+* C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\CircuitoPrueba1.asc
+R2 N003 V1 10
+R4 V2 N003 10
+R3 0 N003 5
+R1 V1 0 5
+R5 V2 0 10
+.backanno
+.end
