@@ -1,0 +1,547 @@
+classdef app2 < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                   matlab.ui.Figure
+        NetlistMenu                matlab.ui.container.Menu
+        OpenMenu                   matlab.ui.container.Menu
+        netfileMenu                matlab.ui.container.Menu
+        xlsxfileMenu               matlab.ui.container.Menu
+        GraphsMenu                 matlab.ui.container.Menu
+        GridLayout                 matlab.ui.container.GridLayout
+        GridLayout2                matlab.ui.container.GridLayout
+        GridLayout3                matlab.ui.container.GridLayout
+        UITable                    matlab.ui.control.Table
+        TextArea                   matlab.ui.control.TextArea
+        TabGroup                   matlab.ui.container.TabGroup
+        RectangularTab             matlab.ui.container.Tab
+        PlotoptionsDropDown        matlab.ui.control.DropDown
+        PlotoptionsDropDownLabel   matlab.ui.control.Label
+        PolarTab                   matlab.ui.container.Tab
+        SmithChartTab              matlab.ui.container.Tab
+        ControlPanel               matlab.ui.container.Panel
+        PortnumberEditField        matlab.ui.control.NumericEditField
+        PortnumberEditFieldLabel   matlab.ui.control.Label
+        StepEditFieldLabel_2       matlab.ui.control.Label
+        TouchtoneFileoptionsPanel  matlab.ui.container.Panel
+        FormatDropDown             matlab.ui.control.DropDown
+        FormatDropDownLabel        matlab.ui.control.Label
+        OutputfileEditField        matlab.ui.control.EditField
+        OutputfileEditFieldLabel   matlab.ui.control.Label
+        InputfileEditField         matlab.ui.control.EditField
+        InputfileEditFieldLabel    matlab.ui.control.Label
+        SaveButton                 matlab.ui.control.Button
+        Button                     matlab.ui.control.Button
+        RunButton                  matlab.ui.control.Button
+        ZoEditField                matlab.ui.control.EditField
+        ZoEditFieldLabel           matlab.ui.control.Label
+        DropDownEndFreq            matlab.ui.control.DropDown
+        DropDownStartFreq          matlab.ui.control.DropDown
+        StepEditField              matlab.ui.control.NumericEditField
+        StepEditFieldLabel         matlab.ui.control.Label
+        EndFreqEditField           matlab.ui.control.NumericEditField
+        EndFreqEditFieldLabel      matlab.ui.control.Label
+        StartFreqEditField         matlab.ui.control.NumericEditField
+        StartFreqEditFieldLabel    matlab.ui.control.Label
+    end
+
+    
+    properties (Access = public)
+        xslx_fileName
+        xslx_filePath
+        xslx_file string {mustBeFile(xslx_file)} % Full path to the file
+        Netlist_table
+        %Netlist_CellArray
+        ZMatrix
+        Start_Freq_Fld
+        End_Freq_Fld
+        Start_Freq
+        End_Freq
+        Start_Freq_Unit
+        End_Freq_Unit
+        Step
+        Zo
+        Port_Num
+        Run_Valid
+    end
+    
+    events (NotifyAccess = private)
+        PathChanged 
+        xlsxNetlistChanged
+    end
+    
+    methods (Access = private)
+        
+        function Z_Matrix = Z_parameters(app, Netlist_table, StartFreq, EndFreq, Step, Port_Num)
+            Start_Nodes = unique(Netlist_table(:,"1st Node"));
+            Start_Nodes.Properties.VariableNames = {'Nodes'};
+            End_Nodes = unique(Netlist_table(:,"2nd Node"));
+            End_Nodes.Properties.VariableNames = {'Nodes'};
+            AllNodes = [Start_Nodes; End_Nodes];
+            AllNodes = unique(AllNodes,'sorted'); 
+            NodesNum = size(AllNodes); %Remove the reference node
+            NodesNum = NodesNum(1,1)-1;
+            Nodes_Matrix = zeros(NodesNum,NodesNum);
+            Y_Parameter_Matrix = zeros(Port_Num,Port_Num); %Double check 
+            Z_Parameter_Matrix = zeros(Port_Num,Port_Num);
+            Z_Matrix = zeros(Port_Num,Port_Num, Step);
+            Step_num = 0; 
+
+
+            for F = StartFreq:(EndFreq-StartFreq)/(Step-1):EndFreq
+                Step_num = Step_num + 1;
+                Nodes_Matrix = Nodes_Matrix_Fun(app,Netlist_table,F); %Nodes_Matrix_fun function
+
+                for i=1 : Port_Num
+                    RedRow_Nodes_Matrix = Nodes_Matrix;  %Esta igualacion se usa para guardar la matriz de Nodes_Matrix temporalmente y en la siguiente linea se 
+                    RedRow_Nodes_Matrix(i,:) = [];          %elimina un renglon, esto es para crear las matrices reducidas 11, 12,  21, etc.
+                
+                    for j = 1 : Port_Num
+                        RedCol_Nodes_Matrix = RedRow_Nodes_Matrix;                  
+                        RedCol_Nodes_Matrix(:,j) = [];      %lo mismo que en el caso anterior pero para eliminar columnas
+                
+                        Y_Parameter_Matrix(i,j) = (det(Nodes_Matrix)/det(RedCol_Nodes_Matrix));  %Port admitance (since it is a nodes matriz), meaning Y parameter (escalar value)
+                
+                         if j ~= i
+                            if (rem(i,2) == 1 && rem(j,2) == 0) || (rem(i,2) == 0 && rem(j,2) == 1)  
+                                Z_Parameter_Matrix(i,j) =  -1/Y_Parameter_Matrix(i,j);            
+                             else 
+                                 Z_Parameter_Matrix(i,j) =  1/Y_Parameter_Matrix(i,j);
+                             end
+                         else %j==i
+                            Z_Parameter_Matrix(i,j) =  1/Y_Parameter_Matrix(i,j);        %Conversion de Parameter Y a Z diagonal principal.
+                         end
+                    end
+                
+                end
+        
+                Z_Matrix(:,:,Step_num) = Z_Parameter_Matrix;
+                %Y_Matrix(:,:,Step_num) = Y_Parameter_Matrix;
+            end
+        end
+        
+        function Nodes_Matrix = Nodes_Matrix_Fun(app, Netlist_table, Freq)
+            Netlist_CellArray = table2cell(Netlist_table);     %Convierto la netlist de tabla a celdas para operar con ella
+            Size_NodesCellArray = size(Netlist_CellArray);
+
+            %calculate the number of nodes for the matrix size
+            nodesC2 = Netlist_CellArray(:,2); %elements start nodes
+            nodesC3 = Netlist_CellArray(:,3); %elements end nodes
+            allNodesConn = [nodesC2; nodesC3];
+            Nodes = unique(allNodesConn,'sorted'); 
+            Nodes = Nodes(2:end); %Remove the reference node N0 (assumed it will always be named as that an therefore be at the top of the arrray)
+            NodesNum = length(Nodes); 
+            Nodes_Matrix = zeros(NodesNum,NodesNum); %Se crea una matriz de NxN donde N es la cantidad de puertos
+            
+            for i = 1 : NodesNum                                  %Iteracion en la cantidad de nodos para los renglones
+                for j = 1 : NodesNum                              %Iteracion en la cantidad de nodos para las columas
+                    for k = 1: Size_NodesCellArray(1,1)           %Iteracion para determinar los componentes en respectivo punto de la matriz nodal   
+            
+                        if strcmpi(Nodes(i),Nodes(j))             %Diagonal principal de la matriz de nodos
+                            if strcmpi(Nodes(j),Netlist_CellArray(k,2)) || strcmpi(Nodes(j),Netlist_CellArray(k,3))    %siempre que el nodo en analisis este presente se sumara                
+                                Nodes_Matrix(i,j) = Nodes_Matrix(i,j) + 1/(Calc_Impedance(app,Netlist_CellArray{k,4},Netlist_CellArray{k,5},Freq));
+                            end
+                        else  %diagonales los elementos que interactuan con el nodo principal y no principal
+                            if (strcmpi(Nodes(j),Netlist_CellArray(k,2)) || strcmpi(Nodes(j),Netlist_CellArray(k,3))) && (strcmpi(Nodes(i),Netlist_CellArray(k,2)) || strcmpi(Nodes(i),Netlist_CellArray(k,3)))
+                                Nodes_Matrix(i,j) = Nodes_Matrix(i,j) - 1/(Calc_Impedance(app,Netlist_CellArray{k,4},Netlist_CellArray{k,5},Freq));
+                            end
+                        end
+            
+                    end    
+                end
+            end
+        end
+
+        function Z = Calc_Impedance(app, Elem_Type, Value, Freq)
+            switch Elem_Type
+                case 'R'
+                    Z = Value;
+                case 'L'
+                    Z = 2*1i*pi*Value*Freq;
+                case 'C'
+                    Z = 1/(2*1i*pi*Freq*Value);
+            end
+        end
+        
+        function Freq_Value = Calc_Freq_Value(app, Freq_Field_Value, Freq_Unit)
+            switch Freq_Unit
+                case 'Hz'
+                    Freq_Value = Freq_Field_Value; 
+                case 'KHz'
+                    Freq_Value = Freq_Field_Value*10^3; 
+                case 'MHz' 
+                    Freq_Value = aFreq_Field_Value*10^6; 
+                case 'GHz'
+                    Freq_Value = Freq_Field_Value*10^9; 
+                case 'THz'
+                    Freq_Value = Freq_Field_Value*10^12; 
+            end
+        end
+        
+        function Retreive_Values_For_Run(app) %Function called everytime run boton is pressed
+            app.Start_Freq = Calc_Freq_Value(app, app.StartFreqEditField.Value, app.DropDownStartFreq.Value);
+            app.End_Freq = Calc_Freq_Value(app, app.EndFreqEditField.Value, app.DropDownEndFreq.Value);
+            app.Step = app.StepEditField.Value;
+            app.Zo = app.ZoEditField.Value;
+            app.Port_Num = app.PortnumberEditField.Value;
+        end
+    end
+    
+    methods (Access = protected)
+        
+        % function update(HasCallbackProperty, app)
+        %     app.UITable.Data = app.Netlist_table;
+        %     app.Netlist_table.Properties.VariableDescriptions{1} = 'Name'; 
+        %     app.Netlist_table.Properties.VariableDescriptions{2} = '1st Node';
+        %     app.Netlist_table.Properties.VariableDescriptions{3} = '2nd Node';
+        %     app.Netlist_table.Properties.VariableDescriptions{4} = 'Type';
+        %     app.Netlist_table.Properties.VariableDescriptions{5} = 'Value';
+        %     app.UITable.ColumnName = app.Netlist_table.Properties.VariableDescriptions;
+        % end
+    end
+    
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Menu selected function: xlsxfileMenu
+        function xlsxfileMenuSelected(app, event)
+            [app.xslx_fileName,app.xslx_filePath] = uigetfile('*.xlsx');
+            if isequal(app.xslx_fileName,0)
+                disp('User selected Cancel');
+                app.Run_Valid = nil;
+            else
+                disp(['User selected ', fullfile(app.xslx_filePath,app.xslx_fileName)]);
+                app.xslx_file = fullfile(app.xslx_filePath,app.xslx_fileName);
+                app.Netlist_table = readtable(app.xslx_file); 
+                app.Netlist_table.Properties.VariableNames = {'Name', '1st Node', '2nd Node', 'Type', 'Value'}; % names of columns
+                app.UITable.Data = app.Netlist_table;
+                app.Netlist_table.Properties.VariableDescriptions{1} = 'Name'; 
+                app.Netlist_table.Properties.VariableDescriptions{2} = '1st Node';
+                app.Netlist_table.Properties.VariableDescriptions{3} = '2nd Node';
+                app.Netlist_table.Properties.VariableDescriptions{4} = 'Type';
+                app.Netlist_table.Properties.VariableDescriptions{5} = 'Value';
+                app.UITable.ColumnName = app.Netlist_table.Properties.VariableDescriptions;
+                %app.Netlist_CellArray = table2cell(app.Netlist_table); 
+                app.Run_Valid = true;
+            end
+
+            %notify(app,"xlsxNetlistChanged");
+            %app.FileName.Value = [fileName,filePath];
+        end
+
+        % Button pushed function: RunButton
+        function RunButtonPushed(app, event)
+            Retreive_Values_For_Run(app);
+            if app.Run_Valid
+                app.ZMatrix = Z_parameters(app, app.Netlist_table, app.Start_Freq, app.End_Freq, app.Step, app.Port_Num);
+                Z_Matrix_test = app.ZMatrix;
+            else
+                Warning_Msg = msgbox("Please load a netlist before run","Warning: Missing netlist");
+            end
+        end
+
+        % Value changed function: StartFreqEditField
+        function StartFreqEditFieldValueChanged(app, event)
+            app.Start_Freq_Fld = app.StartFreqEditField.Value;
+        end
+
+        % Value changed function: EndFreqEditField
+        function EndFreqEditFieldValueChanged(app, event)
+            app.End_Freq_Fld = app.EndFreqEditField.Value;
+        end
+
+        % Value changed function: DropDownStartFreq
+        function DropDownStartFreqValueChanged(app, event)
+            app.Start_Freq = Calc_Freq_Value(app, app.StartFreqEditField.Value, app.DropDownStartFreq.Value);
+        end
+
+        % Value changed function: DropDownEndFreq
+        function DropDownEndFreqValueChanged(app, event)
+            app.End_Freq = Calc_Freq_Value(app, app.EndFreqEditField.Value, app.DropDownEndFreq.Value);
+        end
+
+        % Value changed function: StepEditField
+        function StepEditFieldValueChanged(app, event)
+            app.Step = app.StepEditField.Value;
+        end
+
+        % Value changed function: PortnumberEditField
+        function PortnumberEditFieldValueChanged(app, event)
+            app.Port_Num = app.PortnumberEditField.Value;
+        end
+
+        % Value changed function: ZoEditField
+        function ZoEditFieldValueChanged(app, event)
+            app.Zo = app.ZoEditField.Value;
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Get the file path for locating images
+            pathToMLAPP = fileparts(mfilename('fullpath'));
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 769 627];
+            app.UIFigure.Name = 'MATLAB App';
+
+            % Create NetlistMenu
+            app.NetlistMenu = uimenu(app.UIFigure);
+            app.NetlistMenu.Text = 'Netlist';
+
+            % Create OpenMenu
+            app.OpenMenu = uimenu(app.NetlistMenu);
+            app.OpenMenu.Text = 'Open';
+
+            % Create netfileMenu
+            app.netfileMenu = uimenu(app.OpenMenu);
+            app.netfileMenu.Text = '.net file';
+
+            % Create xlsxfileMenu
+            app.xlsxfileMenu = uimenu(app.OpenMenu);
+            app.xlsxfileMenu.MenuSelectedFcn = createCallbackFcn(app, @xlsxfileMenuSelected, true);
+            app.xlsxfileMenu.Text = '.xlsx file';
+
+            % Create GraphsMenu
+            app.GraphsMenu = uimenu(app.UIFigure);
+            app.GraphsMenu.Text = 'Graphs';
+
+            % Create GridLayout
+            app.GridLayout = uigridlayout(app.UIFigure);
+            app.GridLayout.ColumnWidth = {'1x'};
+            app.GridLayout.RowHeight = {'2x', 157};
+            app.GridLayout.Padding = [0 10 0 10];
+
+            % Create ControlPanel
+            app.ControlPanel = uipanel(app.GridLayout);
+            app.ControlPanel.Title = 'Control Panel';
+            app.ControlPanel.Layout.Row = 2;
+            app.ControlPanel.Layout.Column = 1;
+
+            % Create StartFreqEditFieldLabel
+            app.StartFreqEditFieldLabel = uilabel(app.ControlPanel);
+            app.StartFreqEditFieldLabel.HorizontalAlignment = 'right';
+            app.StartFreqEditFieldLabel.Position = [8 108 58 22];
+            app.StartFreqEditFieldLabel.Text = 'Start Freq';
+
+            % Create StartFreqEditField
+            app.StartFreqEditField = uieditfield(app.ControlPanel, 'numeric');
+            app.StartFreqEditField.ValueChangedFcn = createCallbackFcn(app, @StartFreqEditFieldValueChanged, true);
+            app.StartFreqEditField.Position = [72 108 40 22];
+
+            % Create EndFreqEditFieldLabel
+            app.EndFreqEditFieldLabel = uilabel(app.ControlPanel);
+            app.EndFreqEditFieldLabel.HorizontalAlignment = 'right';
+            app.EndFreqEditFieldLabel.Position = [183 108 54 22];
+            app.EndFreqEditFieldLabel.Text = 'End Freq';
+
+            % Create EndFreqEditField
+            app.EndFreqEditField = uieditfield(app.ControlPanel, 'numeric');
+            app.EndFreqEditField.ValueChangedFcn = createCallbackFcn(app, @EndFreqEditFieldValueChanged, true);
+            app.EndFreqEditField.Position = [245 108 41 22];
+
+            % Create StepEditFieldLabel
+            app.StepEditFieldLabel = uilabel(app.ControlPanel);
+            app.StepEditFieldLabel.HorizontalAlignment = 'right';
+            app.StepEditFieldLabel.Position = [374 108 30 22];
+            app.StepEditFieldLabel.Text = 'Step';
+
+            % Create StepEditField
+            app.StepEditField = uieditfield(app.ControlPanel, 'numeric');
+            app.StepEditField.ValueChangedFcn = createCallbackFcn(app, @StepEditFieldValueChanged, true);
+            app.StepEditField.Position = [410 108 31 22];
+            app.StepEditField.Value = 1;
+
+            % Create DropDownStartFreq
+            app.DropDownStartFreq = uidropdown(app.ControlPanel);
+            app.DropDownStartFreq.Items = {'Hz', 'KHz', 'MHz', 'GHz', 'THz'};
+            app.DropDownStartFreq.ValueChangedFcn = createCallbackFcn(app, @DropDownStartFreqValueChanged, true);
+            app.DropDownStartFreq.Position = [120 108 47 22];
+            app.DropDownStartFreq.Value = 'Hz';
+
+            % Create DropDownEndFreq
+            app.DropDownEndFreq = uidropdown(app.ControlPanel);
+            app.DropDownEndFreq.Items = {'Hz', 'KHz', 'MHz', 'GHz', 'THz'};
+            app.DropDownEndFreq.ValueChangedFcn = createCallbackFcn(app, @DropDownEndFreqValueChanged, true);
+            app.DropDownEndFreq.Position = [293 108 47 22];
+            app.DropDownEndFreq.Value = 'Hz';
+
+            % Create ZoEditFieldLabel
+            app.ZoEditFieldLabel = uilabel(app.ControlPanel);
+            app.ZoEditFieldLabel.HorizontalAlignment = 'right';
+            app.ZoEditFieldLabel.Position = [489 108 25 22];
+            app.ZoEditFieldLabel.Text = 'Zo';
+
+            % Create ZoEditField
+            app.ZoEditField = uieditfield(app.ControlPanel, 'text');
+            app.ZoEditField.ValueChangedFcn = createCallbackFcn(app, @ZoEditFieldValueChanged, true);
+            app.ZoEditField.Position = [521 108 50 22];
+            app.ZoEditField.Value = '50';
+
+            % Create RunButton
+            app.RunButton = uibutton(app.ControlPanel, 'push');
+            app.RunButton.ButtonPushedFcn = createCallbackFcn(app, @RunButtonPushed, true);
+            app.RunButton.Position = [606 23 100 23];
+            app.RunButton.Text = 'Run';
+
+            % Create TouchtoneFileoptionsPanel
+            app.TouchtoneFileoptionsPanel = uipanel(app.ControlPanel);
+            app.TouchtoneFileoptionsPanel.Title = 'Touchtone File options';
+            app.TouchtoneFileoptionsPanel.Position = [8 10 433 85];
+
+            % Create Button
+            app.Button = uibutton(app.TouchtoneFileoptionsPanel, 'push');
+            app.Button.Icon = fullfile(pathToMLAPP, 'folderIcon.png');
+            app.Button.Position = [210 35 55 23];
+            app.Button.Text = '';
+
+            % Create SaveButton
+            app.SaveButton = uibutton(app.TouchtoneFileoptionsPanel, 'push');
+            app.SaveButton.Position = [210 6 55 23];
+            app.SaveButton.Text = 'Save';
+
+            % Create InputfileEditFieldLabel
+            app.InputfileEditFieldLabel = uilabel(app.TouchtoneFileoptionsPanel);
+            app.InputfileEditFieldLabel.HorizontalAlignment = 'right';
+            app.InputfileEditFieldLabel.Position = [7 36 50 22];
+            app.InputfileEditFieldLabel.Text = 'Input file';
+
+            % Create InputfileEditField
+            app.InputfileEditField = uieditfield(app.TouchtoneFileoptionsPanel, 'text');
+            app.InputfileEditField.Position = [67 36 137 22];
+
+            % Create OutputfileEditFieldLabel
+            app.OutputfileEditFieldLabel = uilabel(app.TouchtoneFileoptionsPanel);
+            app.OutputfileEditFieldLabel.HorizontalAlignment = 'right';
+            app.OutputfileEditFieldLabel.Position = [-2 6 60 22];
+            app.OutputfileEditFieldLabel.Text = 'Output file';
+
+            % Create OutputfileEditField
+            app.OutputfileEditField = uieditfield(app.TouchtoneFileoptionsPanel, 'text');
+            app.OutputfileEditField.Position = [68 6 136 22];
+            app.OutputfileEditField.Value = 'parameters';
+
+            % Create FormatDropDownLabel
+            app.FormatDropDownLabel = uilabel(app.TouchtoneFileoptionsPanel);
+            app.FormatDropDownLabel.HorizontalAlignment = 'right';
+            app.FormatDropDownLabel.Position = [285 6 43 22];
+            app.FormatDropDownLabel.Text = 'Format';
+
+            % Create FormatDropDown
+            app.FormatDropDown = uidropdown(app.TouchtoneFileoptionsPanel);
+            app.FormatDropDown.Items = {'Re-Img', 'Mag-Phase'};
+            app.FormatDropDown.Position = [343 6 74 22];
+            app.FormatDropDown.Value = 'Re-Img';
+
+            % Create StepEditFieldLabel_2
+            app.StepEditFieldLabel_2 = uilabel(app.ControlPanel);
+            app.StepEditFieldLabel_2.HorizontalAlignment = 'right';
+            app.StepEditFieldLabel_2.Position = [446 108 16 22];
+            app.StepEditFieldLabel_2.Text = 'Hz';
+
+            % Create PortnumberEditFieldLabel
+            app.PortnumberEditFieldLabel = uilabel(app.ControlPanel);
+            app.PortnumberEditFieldLabel.HorizontalAlignment = 'right';
+            app.PortnumberEditFieldLabel.Position = [592 108 71 22];
+            app.PortnumberEditFieldLabel.Text = 'Port number';
+
+            % Create PortnumberEditField
+            app.PortnumberEditField = uieditfield(app.ControlPanel, 'numeric');
+            app.PortnumberEditField.ValueChangedFcn = createCallbackFcn(app, @PortnumberEditFieldValueChanged, true);
+            app.PortnumberEditField.Position = [671 108 30 22];
+            app.PortnumberEditField.Value = 2;
+
+            % Create GridLayout2
+            app.GridLayout2 = uigridlayout(app.GridLayout);
+            app.GridLayout2.ColumnWidth = {200, '1x'};
+            app.GridLayout2.RowHeight = {'1x'};
+            app.GridLayout2.Layout.Row = 1;
+            app.GridLayout2.Layout.Column = 1;
+
+            % Create TabGroup
+            app.TabGroup = uitabgroup(app.GridLayout2);
+            app.TabGroup.Layout.Row = 1;
+            app.TabGroup.Layout.Column = 2;
+
+            % Create RectangularTab
+            app.RectangularTab = uitab(app.TabGroup);
+            app.RectangularTab.Title = 'Rectangular';
+
+            % Create PlotoptionsDropDownLabel
+            app.PlotoptionsDropDownLabel = uilabel(app.RectangularTab);
+            app.PlotoptionsDropDownLabel.HorizontalAlignment = 'right';
+            app.PlotoptionsDropDownLabel.Position = [343 361 68 22];
+            app.PlotoptionsDropDownLabel.Text = 'Plot options';
+
+            % Create PlotoptionsDropDown
+            app.PlotoptionsDropDown = uidropdown(app.RectangularTab);
+            app.PlotoptionsDropDown.Items = {'Mag-Phase', 'Real-Img'};
+            app.PlotoptionsDropDown.Position = [426 361 100 22];
+            app.PlotoptionsDropDown.Value = 'Mag-Phase';
+
+            % Create PolarTab
+            app.PolarTab = uitab(app.TabGroup);
+            app.PolarTab.Title = 'Polar';
+
+            % Create SmithChartTab
+            app.SmithChartTab = uitab(app.TabGroup);
+            app.SmithChartTab.Title = 'Smith Chart';
+
+            % Create GridLayout3
+            app.GridLayout3 = uigridlayout(app.GridLayout2);
+            app.GridLayout3.ColumnWidth = {'1x'};
+            app.GridLayout3.RowHeight = {170, '1x'};
+            app.GridLayout3.Layout.Row = 1;
+            app.GridLayout3.Layout.Column = 1;
+
+            % Create TextArea
+            app.TextArea = uitextarea(app.GridLayout3);
+            app.TextArea.Editable = 'off';
+            app.TextArea.BackgroundColor = [0.902 0.902 0.902];
+            app.TextArea.Placeholder = 'Netlist table or text';
+            app.TextArea.Layout.Row = 1;
+            app.TextArea.Layout.Column = 1;
+
+            % Create UITable
+            app.UITable = uitable(app.GridLayout3);
+            app.UITable.ColumnName = {'Name'; '1st Node'; '2nd Node'; 'Type'; 'Value'};
+            app.UITable.RowName = {};
+            app.UITable.Layout.Row = 2;
+            app.UITable.Layout.Column = 1;
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = app2
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
