@@ -1,0 +1,29 @@
+"ExpressPCB Netlist"
+"LTspice"
+1
+0
+0
+""
+""
+""
+"Part IDs Table"
+"V1" "10" ""
+"R1" "1k" ""
+"R2" "2k" ""
+"R3" "3k" ""
+
+"Net Names Table"
+"N002" 1
+"N001" 3
+"N003" 6
+
+"Net Connections Table"
+1 1 1 2
+1 2 2 0
+2 1 2 4
+2 3 1 5
+2 4 1 0
+3 2 1 7
+3 3 2 8
+3 4 2 0
+

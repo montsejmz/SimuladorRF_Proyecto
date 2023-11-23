@@ -1,0 +1,10 @@
+* C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\CircuitoT.asc
+V1 N003 N005 10
+R1 N004 N003 1k
+R2 N001 N004 2k
+R3 N005 N004 3k
+C1 N001 N005 2pF
+C2 N002 N005 4pF
+L1 N002 N001 2mH
+.backanno
+.end
