@@ -11,8 +11,10 @@ tendran los numeros consecutivos mas cercanos al 0 (N0).
 Condiciones netlist:
 1.-El nodo de referencia siempre es 0, independiente de si se nombre o no.
 2.-No es necesario nombrar nodos internos, unicamiente los puertos pero se deben nombrar empezando con N001, 
-o bien con un una letra antes de N ej.A para que funcione el sort unique (de otro modo falla la funcion Z_params, ya que ocupa un orden ascendente).
+o bien con un una letra antes de N ej.A para que funcione el sort unique (de otro modo falla la funcion Z_params, ya que ocupa un orden ascendente empezando por los puertos).
 3.-El usuario debe nombrar los componentes por defecto con la inicial del tipo de elemento ej. Rx
+*Se podria determinar el numero de puertos a partir del netlist?? (por si el usuario se equivoca, lo mismo para el excell)
+
 
 Name, 1st Node, 2nd Node, type, Value
 R1	N1	N0	R	1.00E+01
@@ -21,5 +23,4 @@ Name, 1st Node, 2nd Node, Value
 R1 N1 0 10
 
   {'V1'}    {'N002'}    {'N001'}    {'32'}
-  
   
