@@ -4,10 +4,39 @@ function Parametros_Z_R = Z_parameters(Netlist, Frec_inicial, Frec_final, Muestr
  Matriz_nodos_R = zeros(Nodos_n(1,1),Nodos_n(1,1), Muestreo);
  Parametros_Z_R = zeros(2,2, Muestreo);
  X = 0;
+ sz = size(Netlist);
+ Tabla3 = table2cell(Netlist);
+
+if sz(1,1) == 1
+    X1 = ismember('N0',table2array(Netlist(:,"NodoFinal")));
+    X2 = ismember('N0',table2array(Netlist(:,"NodoInicial")));
+    if (X1 == 1 | X2 == 1);
+        
+        for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
+        X = X + 1;
+        Parametros_Z_R(:,:,X) = (Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
+        end
+    else
+
+        Parametros_Z_R(:,:) = 0;
+        % Parametros_y_R = zeros(2,2, Muestreo);
+        % for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
+        % X = X + 1;
+        % Parametros_y_R(1,1,X) = 1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
+        % Parametros_y_R(1,2,X) = -1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
+        % Parametros_y_R(2,1,X) = -1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
+        % Parametros_y_R(2,2,X) = 1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
+        % end
+
+    end
+
+
+else    
+
 
  for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
         X = X + 1;
-       Matriz_nodos_R = LecturaCircuitoExcel(Netlist,F); %Solo cambie el nombre de la funcion a la lectura circuito excel
+       Matriz_nodos_R = Matriz_nodos(Netlist,F);
 
        Port_num = Num_Puertos;                     %Aqui se define la cantidad de puertos que queremos, de momento se deja en 2, esta declarada para
                                  %en caso de que se extrapole el metodo para mas puertos
@@ -41,6 +70,8 @@ function Parametros_Z_R = Z_parameters(Netlist, Frec_inicial, Frec_final, Muestr
 
         Parametros_Z_R(:,:,X) = Parametros_Z;
  end
+end
+
 end
 
  % Parametros_Z_R = 1
