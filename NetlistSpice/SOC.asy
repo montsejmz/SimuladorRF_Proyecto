@@ -1,0 +1,22 @@
+Version 4
+SymbolType BLOCK
+LINE Normal -39 32 -39 16
+LINE Normal -16 32 -16 -47
+LINE Normal 32 32 -16 32
+LINE Normal -96 32 -39 32
+RECTANGLE Normal -31 16 -48 -48
+WINDOW 38 -85 -18 Center 1
+WINDOW 3 -85 -5 Center 1
+WINDOW 123 -85 7 Center 1
+WINDOW 0 -143 -40 Left 2
+SYMATTR Prefix SOC
+SYMATTR SpiceModel Z0
+SYMATTR Value Bl
+SYMATTR Value2 F
+SYMATTR Description Stub Open Circuit
+PIN -96 32 NONE 8
+PINATTR PinName 1
+PINATTR SpiceOrder 1
+PIN 32 32 NONE 8
+PINATTR PinName 2
+PINATTR SpiceOrder 2

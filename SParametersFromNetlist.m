@@ -12,13 +12,13 @@ function [SParamsObject]=SParametersFromNetlist(Netlist_CellArray,Start_Freq, En
     for i=1:size(netlistCell,1)
         
         name=cell2mat(netlistCell(i,1));
-        nodoInicial=str2num(cell2mat(extract(netlistCell(i,2),pat)))
-        nodoFinal=str2num(cell2mat(extract(netlistCell(i,3),pat)))
-        type=cell2mat(netlistCell(i,4))
-        value=cell2mat(netlistCell(i,5))
-        Bl= cell2mat(netlistCell(i,6))
-        Bl=deg2rad(Bl)
-        opFreq=cell2mat(netlistCell(i,7))
+        nodoInicial=str2num(cell2mat(extract(netlistCell(i,2),pat)));
+        nodoFinal=str2num(cell2mat(extract(netlistCell(i,3),pat)));
+        type=cell2mat(netlistCell(i,4));
+        value=cell2mat(netlistCell(i,5));
+        Bl= cell2mat(netlistCell(i,6));
+        Bl=deg2rad(Bl);
+        opFreq=cell2mat(netlistCell(i,7));
         
     
         switch type
@@ -30,14 +30,14 @@ function [SParamsObject]=SParametersFromNetlist(Netlist_CellArray,Start_Freq, En
                 add(circuito,[nodoInicial nodoFinal],capacitor(value,name));
             case "SOC"   % Open circuit (Capacitor)
                  Stub=txlineElectricalLength(LineLength=Bl,ReferenceFrequency=opFreq,StubMode="Series",Termination="Open",Z0=value,Name="StubOpen")
-                 add(circuito,[nodoInicial nodoFinal],Stub)
+                 add(circuito,[nodoInicial nodoFinal],Stub);
     
             case "SSC"    % Short circuit (Inductor)
                 Stub=txlineElectricalLength(LineLength=Bl,ReferenceFrequency=opFreq,StubMode="Series",Termination="Short",Z0=value,Name="StubCorto")
-                add(circuito,[nodoInicial nodoFinal],Stub)
+                add(circuito,[nodoInicial nodoFinal],Stub);
             case "TL"     % Tranmission line
                 TL=txlineElectricalLength(LineLength=Bl,ReferenceFrequency=opFreq,Z0=value)
-                add(circuito,[nodoInicial nodoFinal],Stub)
+                add(circuito,[nodoInicial nodoFinal],Stub);
             otherwise
                 disp("Ingrese un nombre valido")
         end

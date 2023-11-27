@@ -1,0 +1,23 @@
+Version 4
+SymbolType BLOCK
+LINE Normal -24 48 -24 32
+LINE Normal -64 48 -24 48
+LINE Normal -24 -48 -24 -32
+LINE Normal 0 -48 -24 -48
+LINE Normal 0 48 0 -48
+LINE Normal 48 48 0 48
+RECTANGLE Normal -16 32 -32 -32
+WINDOW 38 -81 -5 Center 1
+WINDOW 3 -80 9 Center 1
+WINDOW 123 -80 23 Center 1
+WINDOW 0 -106 -29 Left 2
+SYMATTR Prefix SSC
+SYMATTR SpiceModel Z0
+SYMATTR Value Bl
+SYMATTR Value2 F
+PIN -64 48 NONE 8
+PINATTR PinName 1
+PINATTR SpiceOrder 1
+PIN 48 48 NONE 8
+PINATTR PinName 2
+PINATTR SpiceOrder 2
