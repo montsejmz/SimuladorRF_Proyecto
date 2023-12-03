@@ -1,10 +1,10 @@
-* C:\Users\adare\OneDrive\Documentos\Maestria Cinvestav\Microondas\proyecto\Test R network\Rnetwork.asc
-R1 N1 0 10
-R2 N3 N1 5
-R3 N3 0 10
-R4 N4 N3 5
-R5 N4 0 10
-R6 N2 N4 5
-R7 N2 0 10
+* C:\Users\adare\OneDrive\Documentos\Maestria Cinvestav\Microondas\proyecto\Circuitos de prueba\Test R network\Rnetwork.asc
+R1 N001 0 10
+R2 N003 N001 5
+R3 N003 0 10
+R4 N004 N003 5
+R5 N004 0 10
+R6 N002 N004 5
+R7 N002 0 10
 .backanno
 .end
