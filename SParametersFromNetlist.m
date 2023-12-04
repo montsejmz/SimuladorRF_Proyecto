@@ -37,7 +37,7 @@ function [SParamsObject]=SParametersFromNetlist(Netlist_CellArray,Start_Freq, En
                 add(circuito,[nodoInicial nodoFinal],Stub);
             case "TL"     % Tranmission line
                 TL=txlineElectricalLength(LineLength=Bl,ReferenceFrequency=opFreq,Z0=value)
-                add(circuito,[nodoInicial nodoFinal],Stub);
+                add(circuito,[nodoInicial nodoFinal],TL);
             otherwise
                 disp("Ingrese un nombre valido")
         end
