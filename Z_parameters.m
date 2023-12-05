@@ -14,7 +14,12 @@ if sz(1,1) == 1
         
         for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
         X = X + 1;
-        Parametros_Z_R(:,:,X) = (Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
+        
+        Bl=cell2mat(Tabla3(1,6));       % Para concentrados Bl=0
+        opFreq=cell2mat(Tabla3(1,7));   % Para concentrados opFreq=0
+
+                                % Funcion: Impedancia(Componente, Valor,F)
+        Parametros_Z_R(:,:,X) = (Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F,Bl,opFreq));
         end
     else
 
