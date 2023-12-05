@@ -1,5 +1,26 @@
-casos de prueba
-notacion-prefijos de valores en netlist excell
+Circuitos de prueba 2 puertos:
+Guardar en folders individuales (contenidos en el directorio circuitos de prueba) los siguientes archivos y docs de los circuitos listados abajo:
+*netlist .net
+*netlist .xlsx (excell)
+*Archivo de ADS
+*Archivo touchstone
+*Imagen de graficas de parametros S11 a S22 en rectangular (real-img y Mag-fase, vs frecuencia) (graficas separadas para cada parametro, 1 sola imagen con las 4 graficas) 
+*Imagen de graficas de parametros S11 a S22 en Polar (graficas separadas para cada parametro, 1 sola imagen con las 4 graficas)
+*Imagen de graficas de parametros S11 a S22 en carta Smith (graficas separadas para cada parametro, 1 sola imagen con las 4 graficas)
+*freq inicio, final,  step y Z0.
+
+Circuitos:
+1-Pasa bajas concentrados
+2-Pasa altas concentrados
+3-Pasa banda concentrados
+4-Elemento unico en serie
+5-Elemento unico en shunt
+6-Pasa bajas distribuidos y concentrados
+7-Pasa altas distribuidos y concentrados
+8-Pasa banda distribuidos y concentrados
+9-Linea de transmicion
+10-Circuito_T
+
 
 Condiciones Excell:
 1.-El nodo de referencia siempre se debe llamar N0.
@@ -14,13 +35,59 @@ Condiciones netlist:
 o bien con un una letra antes de N ej.A para que funcione el sort unique (de otro modo falla la funcion Z_params, ya que ocupa un orden ascendente empezando por los puertos).
 3.-El usuario debe nombrar los componentes por defecto con la inicial del tipo de elemento ej. Rx
 *Se podria determinar el numero de puertos a partir del netlist?? (por si el usuario se equivoca, lo mismo para el excell)
+4.-Incluir como insertar elementos distribuidos
 
 
+Condiciones de simulacion:
+-Touchstone Save botton: name includes format .s*p, yet if user changes the format while on the save window, it migt have an erratic behavior, migth need to implement a correction algorithm.
+-El textbox del numero de puertos debe coincidir al numero de puertos de la netlist.
+-Con el boton run se ejecuta la simulacion para el netlist que se tiene seleccionado en el listbox 'Netlist files'
+-Con el boton simulate en el tab 'CTC' se ejecuta la simulacion usando los elementos seleccionados en cada listbox (netlist1, touchstone y netlist2)
+-Todos los archivos de netlist o touchstone deben tener diferente nombre. No debe repetirse el mismo nombre.
+-Para simular unicamente un archivo touchstone se debe de hacer desde CTC y dar click en el boton simulate (no en run). 
+-Nota: Los resultados de simulacion estan guardados internamente y se usan para las graficas, cada que se presiona 'run' o 'simulate' se sobreescriben.
+		El usuario puede seleccionar el tipo de grafica a ver mediante el drownbox pero si se carga un nuevo netlist, los resultados que se veran son los de la ultima simulacion.
+
+Netlist information:
+With Excell:
 Name, 1st Node, 2nd Node, type, Value
 R1	N1	N0	R	1.00E+01
 
+With LTspice:
 Name, 1st Node, 2nd Node, Value
 R1 N1 0 10
 
-  {'V1'}    {'N002'}    {'N001'}    {'32'}
-  
+
+
+
+Por confirmar:
+-NO: Usar la funcion circuit (y relacionadas, ej. Richards) de matlab.
+-TBC: Podemos usar el objeto sparameter de  matlab donde se junta la matriz S, frecuencias y Z0?
+-TBC: Podemos usar las funciones para graficar rfplot y smithplot?
+
+
+Pendientes:
+-Juntar codigo del punto 4, checar como determina parametro Z y Y para un solo elemento serie y shunt.
+-Agregar en el excell y netlist las 2 columnas nuevas, longitud electrica y frecuencia (stub). Actualizar la funcion netlistToCellArray() y xlsxfileMenuSelected callback para leer ambos parametros.
+-El step debe ser en frecuencia, no en puntos de muestra. Posiblemente necesite agregar otra opcion.  
+-1/2: Clear all boton. Sets all to default values and resets interface (except graphs, not sure how to)
+-TBS: end freq bigger than start freq. Check at retreive values fun.
+-actualizar el campo de numero de puertos de acuerdo al touchstone que se lee. Para los netlist depende completamente del usuario. 
+-CTC: No tiene forma de determinar que el netlist es de dos puertos. En cuanto al touchstone, la gui limita las opciones del listbox a solo los archivos de formato .s2p
+-Poner a prueba el uso de notacion-prefijos en los valores de los componentes en el netlist excell
+
+Pendientes completos:
+-Si - Cuando se carga una nueva netlis se selecciona esta en el netlist files list box (la simulacion internamente usa el que se acaba de cargar para la simulacion)
+		nota: si se cargan varios archivos de mismo nombre, tomara el valor del primero que encuentre con el mismo identificador en listbox.ItemsData
+-Si - start & end freq = 1, never 0.
+-Si - Que la simulacion se corra usando el item seleccionado en netlist files, tambien que se actualize la tabla de ese modo.
+-Si CTC: revisar que el touchstone en la funcion CTC sea de dos puertos forzosamente desde que se lee el archivo y se agrega a la listbox en el tab CTC.
+-Si CTC: Puede guardar los rultados del ctc en touchstone (guarda los resultados de la ultima simulacion/run) y no hace conflicto si se hace otra simulacion con 'run'.
+-Si CTC: Actualizar los campos del control panel de acuerdo a la simulacion del CTC
+-Si CTC: Funciona normal si se selecciona none. 
+-Si CTC: Si no se selecciona nada entonces aparece un mensaje, solo la lista de touchstone causaba problemas por no tener valor por default.
+-Si CTC: Grafica los parametros S.
+-Si CTC: Tiene barrita para indicar que se esta corriendo la simulacion. 
+
+
+
