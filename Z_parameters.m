@@ -1,82 +1,64 @@
-function Parametros_Z_R = Z_parameters(Netlist, Frec_inicial, Frec_final, Muestreo,Num_Puertos)
- Nodos = unique(Netlist(:,"NodoInicial"));
- Nodos_n = size(Nodos);
- Matriz_nodos_R = zeros(Nodos_n(1,1),Nodos_n(1,1), Muestreo);
- Parametros_Z_R = zeros(2,2, Muestreo);
- X = 0;
- sz = size(Netlist);
- Tabla3 = table2cell(Netlist);
+function Z_Matrix = Z_parameters(Netlist_CellArray, Start_Freq, End_Freq, Step, Port_Num) 
+            
+    %calculate the number of nodes for the matrix size
+    NetlistCASize = size(Netlist_CellArray);
+    nodesC2 = Netlist_CellArray(:,2); %elements start nodes
+    nodesC3 = Netlist_CellArray(:,3); %elements end nodes
+    allNodesConn = [nodesC2; nodesC3];
+    AllNodes = unique(allNodesConn,'sorted'); 
+    Nodes = AllNodes(2:end); %Remove the reference node N0 (assumed it will always be named as that an therefore be at the top of the arrray)
+    NodesNum = length(Nodes); 
+    Nodes_Matrix = zeros(NodesNum,NodesNum); %Se crea una matriz de NxN donde N es la cantidad de puertos
+    Y_Parameter_Matrix = zeros(Port_Num,Port_Num); %Temp variable, not exacly Y parameter matrix 
+    Z_Parameter_Matrix = zeros(Port_Num,Port_Num);
+    Z_Matrix = zeros(Port_Num,Port_Num, Step);
+    Step_num = 0; 
 
-if sz(1,1) == 1
-    X1 = ismember('N0',table2array(Netlist(:,"NodoFinal")));
-    X2 = ismember('N0',table2array(Netlist(:,"NodoInicial")));
-    if (X1 == 1 | X2 == 1);
-        
-        for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
-        X = X + 1;
-        
-        Bl=cell2mat(Tabla3(1,6));       % Para concentrados Bl=0
-        opFreq=cell2mat(Tabla3(1,7));   % Para concentrados opFreq=0
-
-                                % Funcion: Impedancia(Componente, Valor,F)
-        Parametros_Z_R(:,:,X) = (Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F,Bl,opFreq));
-        end
-    else
-
-        Parametros_Z_R(:,:) = 0;
-        % Parametros_y_R = zeros(2,2, Muestreo);
-        % for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
-        % X = X + 1;
-        % Parametros_y_R(1,1,X) = 1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        % Parametros_y_R(1,2,X) = -1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        % Parametros_y_R(2,1,X) = -1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        % Parametros_y_R(2,2,X) = 1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        % end
-
-    end
-
-
-else    
-
-
- for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
-        X = X + 1;
-       Matriz_nodos_R = Matriz_nodos(Netlist,F);
-
-       Port_num = Num_Puertos;                     %Aqui se define la cantidad de puertos que queremos, de momento se deja en 2, esta declarada para
-                                 %en caso de que se extrapole el metodo para mas puertos
-
-        for i=1 : Port_num
-            A = Matriz_nodos_R;            %Esta igualacion se usa para guardar la matriz de nodos y en la siguiente linea se 
-            A(i,:) = [];                 %elimina un renglon, esto es para crear las matrices reducidas 11, 12,  21, etc.
-        
-            for j = 1 : Port_num
-                B = A;                  
-                z = [i,j];               %variable de control
-                B(:,j) = [];            %lo mismo que en el caso anterior pero para eliminar columnas
-        
-                Parametros(i,j) = (det(Matriz_nodos_R)/det(B));  %Calculo de los parametros para calculas las impedancias
-        
-                 if j ~= i
-                    if (rem(i,2) == 1 & rem(j,2) == 0) | (rem(i,2) == 0 & rem(j,2) == 1);  
-                        Parametros_Z(i,j) =  -1/Parametros(i,j);            
-                     else 
-                         Parametros_Z(i,j) =  1/Parametros(i,j);
-                     end
-                 end
-        
-                  if j == i
-                     Parametros_Z(i,j) =  1/Parametros(i,j);        %Conversion de parametros Y a Z diagonanl principal.
-                  end
-        
+    if NetlistCASize(1,1) == 1 %Netlist has a single element, therefore a series or shunt element or NodesNum == 2 (including gnd)
+        %For file netlist.net ground = 0, while for netlist.xlsx ground = N0
+        if (ismember('N0', AllNodes) || ismember('0', AllNodes))
+            for F = Start_Freq:(End_Freq-Start_Freq)/(Step-1):End_Freq
+                Step_num = Step_num + 1;
+                % ------ MODIFICADO DISTRIBUIDOS---
+                Bl=Netlist_CellArray{1,6};
+                opFreq=Netlist_CellArray{1,7};
+                Z_Matrix(:,:,Step_num) = (Calc_Impedance(Netlist_CellArray{1,4},Netlist_CellArray{1,5},F,Bl,opFreq));
+                % --------------------
             end
-        
+        else
+            Z_Matrix(:,:) = 0; %Series element doesnt have Z param
         end
+   
+    else  %Netlist has more than 1 row  
 
-        Parametros_Z_R(:,:,X) = Parametros_Z;
- end
+        for F = Start_Freq:(End_Freq-Start_Freq)/(Step-1):End_Freq
+            Step_num = Step_num + 1;
+            Nodes_Matrix = Nodes_Matrix_Fun(Netlist_CellArray,F); %Nodes_Matrix_fun function   
+
+            for i=1 : Port_Num
+                RedRow_Nodes_Matrix = Nodes_Matrix;  %Esta igualacion se usa para guardar la matriz de Nodes_Matrix temporalmente y en la siguiente linea se 
+                RedRow_Nodes_Matrix(i,:) = [];          %elimina un renglon, esto es para crear las matrices reducidas 11, 12,  21, etc.
+            
+                for j = 1 : Port_Num
+                    RedCol_Nodes_Matrix = RedRow_Nodes_Matrix;                  
+                    RedCol_Nodes_Matrix(:,j) = [];      %lo mismo que en el caso anterior pero para eliminar columnas
+            
+                    Y_Parameter_Matrix(i,j) = (det(Nodes_Matrix)/det(RedCol_Nodes_Matrix));  %Port admitance (since it is a nodes matriz), meaning Y parameter (escalar value)
+            
+                     if j ~= i
+                        if (rem(i,2) == 1 && rem(j,2) == 0) || (rem(i,2) == 0 && rem(j,2) == 1)  
+                            Z_Parameter_Matrix(i,j) =  -1/Y_Parameter_Matrix(i,j);            
+                         else 
+                             Z_Parameter_Matrix(i,j) =  1/Y_Parameter_Matrix(i,j);
+                         end
+                     else %j==i
+                        Z_Parameter_Matrix(i,j) =  1/Y_Parameter_Matrix(i,j);        %Conversion de Parameter Y a Z diagonal principal.
+                     end
+                end
+            
+            end
+    
+            Z_Matrix(:,:,Step_num) = Z_Parameter_Matrix;
+        end
+    end
 end
-
-end
-
- % Parametros_Z_R = 1

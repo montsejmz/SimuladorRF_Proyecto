@@ -1,6 +1,6 @@
 function Y=Y_TL(f,Z,Bl,opFreq)
 
-        Y = zeros(2,2)
+        %Y = zeros(2,2);
 
         % Constantes, obtener longitud [m] equivalente a la
         % longitud eléctrica en grados introducida por el usuario
@@ -19,12 +19,15 @@ function Y=Y_TL(f,Z,Bl,opFreq)
         C=1i*sin(Beta*l)/Z;
         D=cos(Beta*l);
 
-        deltaABCD=(A*D)-(B*C)
-        Y11=D/B;
-        Y12(-deltaABCD)/B;
-        Y21=(-1)/B;
-        Y22=(A/B);
+        ABCD=[A B; C D];
+        Y=abcd2y(ABCD);
 
-        Y=[Y11 Y12;Y21 Y22];
+        % deltaABCD=(A*D)-(B*C);
+        % Y11=D/B;
+        % Y12=(-deltaABCD)/B;
+        % Y21=(-1)/B;
+        % Y22=(A/B);
+
+        %Y=[Y11 Y12;Y21 Y22];
         
 end

@@ -1,6 +1,7 @@
 * C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\Proyecto\NetlistSpice\LineaTransmision.asc
-L1 N004 N002 1n
+L1 N004 N005 1n
 TL1 N003 N004 45 45 1E9
 L2 N001 N003 1n
+TL2 N005 N002 60 45 1E9
 .backanno
 .end
