@@ -1,0 +1,14 @@
+* C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\Proyecto\NetlistSpice\CircuitoComplejoStubs.asc
+C2 N003 N001 12p
+C3 N004 N003 12p
+C4 N005 N004 12p
+C5 N007 N006 12p
+R1 N003 0 75
+R2 N005 0 75
+R3 N007 0 75
+L1 N006 0 10n
+SSC1 N004 0 62.83 45 1E9
+SOC1 N005 N006 13.26 45 1E9
+SOC2 N007 N002 13.26 45 1E9
+.backanno
+.end
