@@ -11,17 +11,17 @@ function Z = Calc_Impedance(Componente, Valor,F,Bl,opFreq)
         case 'TL_Y1'
             % Recordando que Y1=Y12
             Y=Y_TL(F,Valor,Bl,opFreq);
-            Y1=Y(1,2);
+            Y1=-Y(2,1);
             Z=1/Y1;
         case 'TL_Y2'
             % Recordando que Y2=Y11-Y12
             Y=Y_TL(F,Valor,Bl,opFreq);
-            Y2=(Y(1,1)-Y(1,2));
+            Y2=(Y(1,1)+Y(1,2));
             Z=1/Y2;
         case 'TL_Y3'
             % Recordando que Y3=Y22-Y12
             Y=Y_TL(F,Valor,Bl,opFreq);
-            Y3=(Y(2,2)-Y(1,2));
+            Y3=(Y(2,2)+Y(1,2));
             Z=1/Y3; 
     end
 
