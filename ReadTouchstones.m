@@ -1,4 +1,4 @@
-function [Frecuencias, Parametros_S, Z0] = ReadTouchstones(File)
+function [Frecuencias, Matriz_R, Z0, Parametro] = ReadTouchstones(File)
 
 
 fileID = fopen(File,'r');
@@ -16,6 +16,7 @@ end
 
 Formato_datos = cell2mat(Datos_Formato(4,1));
 Formato_datos = lower(Formato_datos);
+Parametro = cell2mat(Datos_Formato(3,1))
 Unidad_Frecuencia = cell2mat(Datos_Formato(2,1));
 Unidad_Frecuencia = lower(Unidad_Frecuencia);
 %Puertos = 2;
@@ -46,32 +47,32 @@ D_6 = Datos_S_parameters{1,7};
 D_7 = Datos_S_parameters{1,8};
 D_8 = Datos_S_parameters{1,9};
 sz_2 = size(D_1);
-Parametros_S = zeros(2,2,sz_2(1,1));
+Matriz_R = zeros(2,2,sz_2(1,1));
 
 switch Formato_datos
 
     case 'ma'        
         for i = 1 : sz_2(1,1)
-            Parametros_S(1,1,i) = D_1(i,1)*cos(deg2rad(D_2(i,1))) + D_1(i,1)*sin(deg2rad(D_2(i,1)))*1i;
-            Parametros_S(1,2,i) = D_3(i,1)*cos(deg2rad(D_4(i,1))) + D_3(i,1)*sin(deg2rad(D_4(i,1)))*1i;
-            Parametros_S(2,1,i) = D_5(i,1)*cos(deg2rad(D_6(i,1))) + D_5(i,1)*sin(deg2rad(D_6(i,1)))*1i;
-            Parametros_S(2,2,i) = D_7(i,1)*cos(deg2rad(D_8(i,1))) + D_7(i,1)*sin(deg2rad(D_8(i,1)))*1i;
+            Matriz_R(1,1,i) = D_1(i,1)*cos(deg2rad(D_2(i,1))) + D_1(i,1)*sin(deg2rad(D_2(i,1)))*1i;
+            Matriz_R(1,2,i) = D_3(i,1)*cos(deg2rad(D_4(i,1))) + D_3(i,1)*sin(deg2rad(D_4(i,1)))*1i;
+            Matriz_R(2,1,i) = D_5(i,1)*cos(deg2rad(D_6(i,1))) + D_5(i,1)*sin(deg2rad(D_6(i,1)))*1i;
+            Matriz_R(2,2,i) = D_7(i,1)*cos(deg2rad(D_8(i,1))) + D_7(i,1)*sin(deg2rad(D_8(i,1)))*1i;
         end
 
     case 'ri'     
          for i = 1 : sz_2(1,1)
-            Parametros_S(1,1,i) = D_1(i,1) + D_2(i,1)*1i;
-            Parametros_S(1,2,i) = D_3(i,1) + D_4(i,1)*1i;
-            Parametros_S(2,1,i) = D_5(i,1) + D_6(i,1)*1i;
-            Parametros_S(2,2,i) = D_7(i,1) + D_8(i,1)*1i;
+            Matriz_R(1,1,i) = D_1(i,1) + D_2(i,1)*1i;
+            Matriz_R(1,2,i) = D_3(i,1) + D_4(i,1)*1i;
+            Matriz_R(2,1,i) = D_5(i,1) + D_6(i,1)*1i;
+            Matriz_R(2,2,i) = D_7(i,1) + D_8(i,1)*1i;
          end
 
     case 'db'
         for i = 1 : sz_2(1,1)
-            Parametros_S(1,1,i) = db2mag(D_1(i,1))*cos(deg2rad(D_2(i,1))) + db2mag(D_1(i,1))*sin(deg2rad(D_2(i,1)))*1i;
-            Parametros_S(1,2,i) = db2mag(D_3(i,1))*cos(deg2rad(D_4(i,1))) + db2mag(D_3(i,1))*sin(deg2rad(D_4(i,1)))*1i;
-            Parametros_S(2,1,i) = db2mag(D_5(i,1))*cos(deg2rad(D_6(i,1))) + db2mag(D_5(i,1))*sin(deg2rad(D_6(i,1)))*1i;
-            Parametros_S(2,2,i) = db2mag(D_7(i,1))*cos(deg2rad(D_8(i,1))) + db2mag(D_7(i,1))*sin(deg2rad(D_8(i,1)))*1i;
+            Matriz_R(1,1,i) = db2mag(D_1(i,1))*cos(deg2rad(D_2(i,1))) + db2mag(D_1(i,1))*sin(deg2rad(D_2(i,1)))*1i;
+            Matriz_R(1,2,i) = db2mag(D_3(i,1))*cos(deg2rad(D_4(i,1))) + db2mag(D_3(i,1))*sin(deg2rad(D_4(i,1)))*1i;
+            Matriz_R(2,1,i) = db2mag(D_5(i,1))*cos(deg2rad(D_6(i,1))) + db2mag(D_5(i,1))*sin(deg2rad(D_6(i,1)))*1i;
+            Matriz_R(2,2,i) = db2mag(D_7(i,1))*cos(deg2rad(D_8(i,1))) + db2mag(D_7(i,1))*sin(deg2rad(D_8(i,1)))*1i;
         end
 
 
