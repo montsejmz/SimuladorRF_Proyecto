@@ -30,4 +30,5 @@ function Netlist_CellArray = Netlist2CellArray(netlist_file)
            n=n+1;
         end
     end
+    
 end   

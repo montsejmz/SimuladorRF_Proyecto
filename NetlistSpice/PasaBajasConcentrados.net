@@ -1,0 +1,5 @@
+* C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\Proyecto\NetlistSpice\PasaBajasConcentrados.asc
+SSC1 N001 N002 56.54 45 1E9
+C1 N002 0 17p
+.backanno
+.end
