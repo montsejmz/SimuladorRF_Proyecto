@@ -1,0 +1,7 @@
+* C:\Users\adare\OneDrive\Documentos\Maestria Cinvestav\Microondas\proyecto\Circuitos de prueba\Pasa bajas\Pasa bajas network\pasa_bajas_network.asc
+R1 N003 N001 14
+R2 N002 N003 25
+C1 N003 0 1300p
+C2 N002 0 470p
+.backanno
+.end
