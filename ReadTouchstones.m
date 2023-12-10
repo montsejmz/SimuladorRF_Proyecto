@@ -6,17 +6,64 @@ fileID = fopen(File,'r');
 Datos_S_parameters = textscan(fileID,'%f %f %f %f %f %f %f %f %f','CommentStyle','!','HeaderLines',2);
 
 frewind(fileID);
+
+
 while true
    Datos_Formato = fgets(fileID);
    Datos_Formato = split(Datos_Formato,' ');
     if strcmpi(Datos_Formato(1,1),'#')
+        Bandera = fgets(fileID);
+        Bandera = split(Bandera, ' ');
+        %Bandera = cell2mat(Bandera)
+        Flat = cell2mat(Bandera(1,1));
+        Flat = str2double(Flat);
+        %G = 0
+        if isnan(Flat)
+           Flat = 'no estan pegados';
+         %  G = 1;
+           
+        end
+
+        if isnumeric(Flat)
+        %    G = 5;
+            frewind(fileID);
+            while true
+             salto = fgets(fileID);
+             salto = split(salto,' ');
+                if strcmpi(salto(1,1),'#')
+                    break
+                end
+            end
+
+            Datos_S_parameters = textscan(fileID,'%f %f %f %f %f %f %f %f %f','CommentStyle','!','HeaderLines',0);
+
+        end
         break
     end
 end
 
+
+X = 1;
+while true
+    
+    if strcmpi (Datos_Formato(X,1),'')
+        Datos_Formato(X,:) = [];
+        X = X -1;
+    end
+
+    sz2 = size(Datos_Formato);
+    if sz2(1,1) == 6
+        break
+    end
+    
+    X = X + 1;
+
+
+end
+
 Formato_datos = cell2mat(Datos_Formato(4,1));
 Formato_datos = lower(Formato_datos);
-Parametro = cell2mat(Datos_Formato(3,1))
+Parametro = cell2mat(Datos_Formato(3,1));
 Unidad_Frecuencia = cell2mat(Datos_Formato(2,1));
 Unidad_Frecuencia = lower(Unidad_Frecuencia);
 %Puertos = 2;
