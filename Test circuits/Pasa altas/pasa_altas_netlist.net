@@ -1,0 +1,7 @@
+* C:\Users\adare\OneDrive\Documentos\Maestria Cinvestav\Microondas\proyecto\Circuitos de prueba\Pasa altas\pasa_altas.asc
+C1 N003 N001 130p
+C2 N002 N003 47p
+R1 N003 0 53
+R2 N002 0 95
+.backanno
+.end
