@@ -1,0 +1,6 @@
+* C:\Users\adare\OneDrive\Documentos\Maestria Cinvestav\Microondas\proyecto\Circuitos de prueba\Pasa banda\Pasa_bandas.asc
+R1 N002 N001 10
+C1 N002 0 159p
+L1 N002 0 100n
+.backanno
+.end
