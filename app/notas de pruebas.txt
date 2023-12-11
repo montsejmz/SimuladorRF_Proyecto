@@ -9,6 +9,7 @@ Guardar en folders individuales (contenidos en el directorio circuitos de prueba
 *Imagen de graficas de parametros S11 a S22 en carta Smith (graficas separadas para cada parametro, 1 sola imagen con las 4 graficas)
 *freq inicio, final,  step y Z0.
 *Frec. corte
+*Cualquier touchstone creado a partir de la app debe guardarse en la subcarpeta "Touchstones from app" del directorio del circuito de prueba.
 
 Circuitos:
 1-Pasa bajas concentrados
@@ -21,6 +22,19 @@ Circuitos:
 8-Pasa banda distribuidos y concentrados
 9-Linea de transmicion
 10-Circuito_T
+11.-Circuito 
+
+Casos de prueba:
+-touchstone elementos distribuidos y netlist en CTC.
+-Lectura y escritura touchstone distribuidos.
+-Simulacion de circuitos distribuidos.
+
+Errores:
+
+
+
+DOCUMENTACION;
+-Formato netlist & excel (Requerimientos para elementos distribuidos)
 
 
 Condiciones Excell:
@@ -49,6 +63,8 @@ Condiciones de simulacion:
 -Para simular unicamente un archivo touchstone se debe de hacer desde CTC y dar click en el boton simulate (no en run). 
 -Nota: Los resultados de simulacion estan guardados internamente y se usan para las graficas, cada que se presiona 'run' o 'simulate' se sobreescriben.
 		El usuario puede seleccionar el tipo de grafica a ver mediante el drownbox pero si se carga un nuevo netlist, los resultados que se veran son los de la ultima simulacion.
+-El simulador puede leer y escribir archivos touchstone de cualquier parametros (S, Y, Z y ABCD)
+
 
 Netlist information:
 With Excell:
@@ -60,23 +76,16 @@ Name, 1st Node, 2nd Node, Value
 R1 N1 0 10
 
 
-
-
 Por confirmar:
 -NO: Usar la funcion circuit (y relacionadas, ej. Richards) de matlab.
 -SI: Podemos usar el objeto sparameter de  matlab donde se junta la matriz S, frecuencias y Z0?
--lectura escritura touchstone parametro z y Y.
-
 
 
 Pendientes:
--WIP: graficar parametros Z y Y. Por ahora solo grafica parametro S. (Rect: db, mag, real, imaginario, phase)
--1/2: Clear all boton. Sets all to default values and resets interface (except graphs, not sure how to)
--Juntar codigo del punto 4, checar como determina parametro Z y Y para un solo elemento serie y shunt.
--Agregar funcion netlist to cel array con elementos distribuidos.
--Agregar en el excell y netlist las 2 columnas nuevas, longitud electrica y frecuencia (stub). Actualizar la funcion netlistToCellArray() y xlsxfileMenuSelected callback para leer ambos parametros.
--El step debe ser en frecuencia, no en puntos de muestra. Posiblemente necesite agregar otra opcion.  
--TBS: end freq bigger than start freq. Check at retreive values fun.
--CTC: No tiene forma de determinar que el netlist es de dos puertos. En cuanto al touchstone, la gui limita las opciones del listbox a solo los archivos de formato .s2p
--Escribir touchstone en parametro Z, Y y ABCD con rfwrite.
+-Check parameter conversion for touchstone read simulation. Comparar graficas de parametros S, Z, Y y ABCD con los test cases que tenemos ADS vs app.
+-Check correctness of graphs by ADS sims.
+-Check magnitud graphs in decibels.
 
+Posibles updates:
+-1/2: Clear all boton. Sets all to default values and resets interface (except graphs, not sure how to)
+-El step debe ser en frecuencia, no en puntos de muestra. Posiblemente necesite agregar otra opcion.  
