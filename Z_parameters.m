@@ -22,7 +22,8 @@ function Z_Matrix = Z_parameters(Netlist_CellArray, Start_Freq, End_Freq, Step, 
                 % ------ MODIFICADO DISTRIBUIDOS---
                 Bl=Netlist_CellArray{1,6};
                 opFreq=Netlist_CellArray{1,7};
-                Z_Matrix(:,:,Step_num) = (Calc_Impedance(Netlist_CellArray{1,4},Netlist_CellArray{1,5},F,Bl,opFreq));
+                Name=Netlist_CellArray{1,1};
+                Z_Matrix(:,:,Step_num) = (Calc_Impedance(Netlist_CellArray{1,4},Netlist_CellArray{1,5},F,Bl,opFreq,Name));
                 % --------------------
             end
         else

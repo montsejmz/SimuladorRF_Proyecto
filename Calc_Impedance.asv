@@ -1,13 +1,14 @@
 function Z = Calc_Impedance(Componente, Valor,F,Bl,opFreq,Name)
 
     if Name =="Series"
+        Z=0;
         Impedancia=0;
         componentes=strsplit(Componente,',');
         for j=1:(size(componentes,2)-1)
             a=componentes{1,j};
-            Impedancia=Calc_Impedance(componentes{1,j},Valor(j),F,Bl(j),opFreq(j),componentes{1,j})+Impedancia;
+            Impedancia=Calc_Impedance(componentes{1,j},Valor(j),F,Bl(j),opFreq(j),componentes{1,j});
+            Z=Z+Impedancia;
         end
-        Z=Impedancia;
     end
 
     switch Componente

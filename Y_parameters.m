@@ -1,38 +1,32 @@
-function Parametros_Y = Y_parameters(Netlist, Frec_inicial, Frec_final, Muestreo,Num_Puertos)
+function Y_Matrix = Y_parameters( Netlist_CellArray, Start_Freq, End_Freq, Step, Port_Num)
+    
+    %calculate the number of nodes for the matrix size
+    NetlistCASize = size(Netlist_CellArray);
+    nodesC2 = Netlist_CellArray(:,2); %elements start nodes
+    nodesC3 = Netlist_CellArray(:,3); %elements end nodes
+    allNodesConn = [nodesC2; nodesC3];
+    AllNodes = unique(allNodesConn,'sorted'); 
+    Step_num = 0; 
 
- sz = size(Netlist);
- X = 0;
- Tabla3 = table2cell(Netlist);
-
-if sz(1,1) == 1
-    X1 = ismember('N0',table2array(Netlist(:,"NodoFinal")));
-    X2 = ismember('N0',table2array(Netlist(:,"NodoInicial")));
-    if (X1 == 1 | X2 == 1);
-        Parametros_Y = zeros(2,2)
-        % for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
-        % X = X + 1;
-        % Parametros_Z_R(:,:,X) = (Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        % end
-    else
-
-        Parametros_Y = zeros(2,2, Muestreo);
-        for F = Frec_inicial:(Frec_final-Frec_inicial)/(Muestreo-1):Frec_final
-        X = X + 1;
-        Parametros_Y(1,1,X) = 1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        Parametros_Y(1,2,X) = -1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        Parametros_Y(2,1,X) = -1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
-        Parametros_Y(2,2,X) = 1/(Impedancia(cell2mat(Tabla3(1,4)),cell2mat(Tabla3(1,5)),F));
+    if NetlistCASize(1,1) == 1 %Netlist has only one element, either a series or shunt element
+        %For file netlist.net ground = 0, while for netlist.xlsx ground = N0
+        if (ismember('N0', AllNodes) || ismember('0', AllNodes))
+            Y_Matrix = zeros(2,2);
+        else
+            Y_Matrix = zeros(2,2, Step_num);
+            for F = Start_Freq:(End_Freq-Start_Freq)/(Step-1):End_Freq
+                Step_num = Step_num + 1;
+                Bl=Netlist_CellArray{1,6};
+                opFreq=Netlist_CellArray{1,7};
+                Name=Netlist_CellArray{1,1};
+                Y_Matrix(1,1,Step_num) = 1/(Calc_Impedance(Netlist_CellArray{1,4},Netlist_CellArray{1,5},F,Bl,opFreq,Name));
+                Y_Matrix(1,2,Step_num) = -1/(Calc_Impedance(Netlist_CellArray{1,4},Netlist_CellArray{1,5},F,Bl,opFreq,Name));
+                Y_Matrix(2,1,Step_num) = -1/(Calc_Impedance(Netlist_CellArray{1,4},Netlist_CellArray{1,5},F,Bl,opFreq,Name));
+                Y_Matrix(2,2,Step_num) = 1/(Calc_Impedance(Netlist_CellArray{1,4},Netlist_CellArray{1,5},F,Bl,opFreq,Name));
+            end
         end
-
+    else %Netlist has more than one element 
+        Z_Matrix = Z_parameters(Netlist_CellArray, Start_Freq, End_Freq, Step, Port_Num);
+        Y_Matrix = pageinv(Z_Matrix);
     end
-
-
-else  
-
-
-
-Parametros = Z_parameters(Netlist, Frec_inicial, Frec_final, Muestreo,Num_Puertos);
-Parametros_Y = pageinv(Parametros);
-end
-
 end

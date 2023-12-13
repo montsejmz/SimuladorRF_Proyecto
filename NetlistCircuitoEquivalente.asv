@@ -73,26 +73,35 @@ function nueva_netlistCell= NetlistCircuitoEquivalente(netlistCell)
     seriesBl=[];
     seriesopFreq=[];
 
-    if Nodes{1,1} ~="0"
+    if Nodes{1,1} ~=0
         for j=1:size(nueva_netlistCell,1)
            tipo2=nueva_netlistCell{j,4};
-           seriesType= [tipo2, ',',seriesType];
+           seriesType= [tipo2 ',' seriesType];
 
            value2=nueva_netlistCell{j,5};
            seriesValue= [value2, seriesValue];
 
            Bl2=nueva_netlistCell{j,6};
-           seriesBl= [Bl2, seriesBl];
+           seriesBl= [str2double(Bl2), seriesBl];
 
            opFreq2=nueva_netlistCell{j,7};
-           seriesopFreq= [opFreq2, seriesopFreq];
+           seriesopFreq= [str2double(seriesopFreq), seriesopFreq];
 
-           nueva_netlistCell(1,:)=['Series','N001','N002',{seriesType},{seriesValue},{seriesBl},{seriesopFreq}];
-        end
-
-        nueva_netlistCell=nueva_netlistCell(1,:);
+           nueva_netlistCell(1,:)=['Series','N001','N002',{seriesType},{seriesValue},{seriesBl},{seriesopFreq}]
+       end
     end
 
+    % for i=1:size(nueva_netlistCell,1)
+    %     NodoInicialLogic=find(strcmp(nueva_netlistCell{i,2}, "0"));  % Vale 1 cuando hay GND
+    %     NodoFinalLogic=find(strcmp(nueva_netlistCell{i,3}, "0"));
+    % 
+    %     if NodoInicialLogic==0 && NodoFinalLogic==0     % Cuando no hay GND
+    %        
+    %     end
+    % 
+    % end
+    
+    
     
      
 end

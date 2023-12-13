@@ -20,14 +20,16 @@
                                 Componente=Netlist_CellArray{k,4};
                                 Bl=Netlist_CellArray{k,6};       % Para concentrados Bl=0 y no tiene efecto en Calc_Impedancia
                                 opFreq=Netlist_CellArray{k,7};   % Para concentrados opFreq=0 y no tiene efecto en Calc_Impedancia
-                                Nodes_Matrix(i,j) = Nodes_Matrix(i,j) + 1/(Calc_Impedance(Netlist_CellArray{k,4},Netlist_CellArray{k,5},Freq,Bl,opFreq));
+                                Name=Netlist_CellArray{k,1};
+                                Nodes_Matrix(i,j) = Nodes_Matrix(i,j) + 1/(Calc_Impedance(Netlist_CellArray{k,4},Netlist_CellArray{k,5},Freq,Bl,opFreq,Name));
                             end
                         else  %diagonales los elementos que interactuan con el nodo principal y no principal
                             if (strcmpi(Nodes(j),Netlist_CellArray(k,2)) || strcmpi(Nodes(j),Netlist_CellArray(k,3))) && (strcmpi(Nodes(i),Netlist_CellArray(k,2)) || strcmpi(Nodes(i),Netlist_CellArray(k,3)))
                                 % --------- MODIFICADO DISTRIBUIDOS-------
                                 Bl=Netlist_CellArray{k,6};       % Para concentrados Bl=0 y no tiene efecto en Calc_Impedancia
                                 opFreq=Netlist_CellArray{k,7};   % Para concentrados opFreq=0 y no tiene efecto en Calc_Impedancia
-                                Nodes_Matrix(i,j) = Nodes_Matrix(i,j) - 1/(Calc_Impedance(Netlist_CellArray{k,4},Netlist_CellArray{k,5},Freq,Bl,opFreq));
+                                Name=Netlist_CellArray{k,1};
+                                Nodes_Matrix(i,j) = Nodes_Matrix(i,j) - 1/(Calc_Impedance(Netlist_CellArray{k,4},Netlist_CellArray{k,5},Freq,Bl,opFreq,Name));
                             end
                         end
             

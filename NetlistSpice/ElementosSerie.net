@@ -1,0 +1,5 @@
+* C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\Proyecto\NetlistSpice\ElementosSerie.asc
+R1 N002 N001 75
+C1 N002 0 5p
+.backanno
+.end
