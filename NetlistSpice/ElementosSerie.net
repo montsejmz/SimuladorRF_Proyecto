@@ -1,4 +1,6 @@
 * C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\Proyecto\NetlistSpice\ElementosSerie.asc
-SSC1 N001 N002 45 45 1E9
+SSC1 N001 N003 45 45 1E9
+L1 N003 N004 10n
+R1 N004 N002 75
 .backanno
 .end
