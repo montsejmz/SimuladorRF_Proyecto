@@ -18,12 +18,15 @@ function nueva_netlistCell= NetlistCircuitoEquivalente(netlistCell)
             Bl= cell2mat(netlistCell(i,6));
             Bl=deg2rad(Bl);
             opFreq=cell2mat(netlistCell(i,7));
+
+            pat=digitsPattern;
+            nodoFinalCero=cell2mat(extract(nodoFinal,pat));
     
-            if type=="TL" && nodoFinal~="0" 
+            if type=="TL" && nodoFinalCero~="0" 
                 % Guarda informacion de las lineas de transmision
                 Info(X,:)={nodoInicial,nodoFinal,value,Bl,opFreq,type};
                 X=X+1;
-            elseif type=="TL" && nodoFinal=="0" 
+            elseif type=="TL" && nodoFinalCero=="0" 
                 % Una linea de transmision a Tierra es un stub en corto circuito
                 newType= 'SSC'
                 nueva_netlistCell(X2,:)=[{newType},{nodoInicial},{nodoFinal},{newType},{value},netlistCell{i,6},{opFreq}];
@@ -66,14 +69,17 @@ function nueva_netlistCell= NetlistCircuitoEquivalente(netlistCell)
     nodesC2 = nueva_netlistCell(:,2); %elements start nodes
     nodesC3 = nueva_netlistCell(:,3); %elements end nodes
     allNodesConn = [nodesC2; nodesC3];
-    Nodes = unique(allNodesConn,'sorted'); 
+    Nodes = unique(allNodesConn,'sorted');
+
+    pat=digitsPattern;
+    firstNode=cell2mat(extract(Nodes{1,1},pat));
     
     seriesType='';
     seriesValue=[];
     seriesBl=[];
     seriesopFreq=[];
 
-    if Nodes{1,1} ~="0"
+    if firstNode ~="0"
         for j=1:size(nueva_netlistCell,1)
            tipo2=nueva_netlistCell{j,4};
            seriesType= [tipo2, ',',seriesType];

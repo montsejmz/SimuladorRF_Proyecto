@@ -1,0 +1,7 @@
+* C:\Users\monts\OneDrive\Documentos\Escuela\Cinvestav\Primer Cuatrimestre\RFI\Proyecto\NetlistSpice\FiltroPasaAltasConcentrados.asc
+C1 N003 0 1.3n
+C2 N002 0 4.7E-10
+R1 N001 N003 14
+R2 N003 N002 25
+.backanno
+.end
